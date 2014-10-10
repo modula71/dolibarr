@@ -514,7 +514,7 @@ class ExtraFields
 
 
 	/**
-	 * 	Load array this->attribute_label
+	 * 	Load array this->attribute_xxx like attribute_label, attribute_type, ...
 	 *
 	 * 	@param	string		$elementtype		Type of element ('adherent', 'commande', societe', 'facture', 'propal', 'product', ...)
 	 * 	@param	boolean		$forceload			Force load of extra fields whatever is option MAIN_EXTRAFIELDS_DISABLED
@@ -1040,7 +1040,7 @@ class ExtraFields
 	 * Fill array_options property of object by extrafields value (using for data sent by forms)
 	 *
 	 * @param   array	$extralabels    $array of extrafields
-	 * @param   object	&$object        Object
+	 * @param   object	$object        Object
 	 * @param	string	$onlykey		Only following key is filled
 	 * @return	int						1 if array_options set / 0 if no value
 	 */

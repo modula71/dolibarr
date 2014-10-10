@@ -50,7 +50,7 @@ if ($user->societe_id > 0) $socid = $user->societe_id;
 if (! $user->rights->projet->lire) accessforbidden();
 
 // Initialize technical object to manage hooks of thirdparties. Note that conf->hooks_modules contains array array
-$hookmanager->initHooks(array('projecttaskcard'));
+$hookmanager->initHooks(array('projecttaskcard','globalcard'));
 
 $object = new Task($db);
 $extrafields = new ExtraFields($db);
@@ -58,9 +58,11 @@ $projectstatic = new Project($db);
 
 // fetch optionals attributes and labels
 $extralabels=$extrafields->fetch_name_optionals_label($object->table_element);
+
+
 /*
  * Actions
-*/
+ */
 
 if ($action == 'update' && ! $_POST["cancel"] && $user->rights->projet->creer)
 {
@@ -91,11 +93,10 @@ if ($action == 'update' && ! $_POST["cancel"] && $user->rights->projet->creer)
 		$ret = $extrafields->setOptionalsFromPost($extralabels,$object);
 
 		$result=$object->update($user);
-		
+
 		if ($result < 0)
 		{
-		    setEventMessage($object->error,'errors');
-		    setEventMessage($object->errors,'errors');
+		    setEventMessages($object->error,$object->errors,'errors');
 		}
 	}
 	else
@@ -121,8 +122,7 @@ if ($action == 'confirm_delete' && $confirm == "yes" && $user->rights->projet->s
 		}
 		else
 		{
-			$langs->load("errors");
-			setEventMessage($langs->trans($object->error), 'errors');
+		    setEventMessages($object->error,$object->errors,'errors');
 			$action='';
 		}
 	}
@@ -159,7 +159,7 @@ if ($action == 'builddoc' && $user->rights->projet->creer)
 		$outputlangs = new Translate("",$conf);
 		$outputlangs->setDefaultLang(GETPOST('lang_id'));
 	}
-	$result=task_pdf_create($db, $object, $object->modelpdf, $outputlangs);
+	$result= $object->generateDocument($object->modelpdf, $outputlangs);
 	if ($result <= 0)
 	{
 		dol_print_error($db,$result);
@@ -202,7 +202,7 @@ if ($id > 0 || ! empty($ref))
 		$res=$object->fetch_optionals($object->id,$extralabels);
 
 		$result=$projectstatic->fetch($object->fk_project);
-		if (! empty($projectstatic->socid)) $projectstatic->societe->fetch($projectstatic->socid);
+		if (! empty($projectstatic->socid)) $projectstatic->fetch_thirdparty();
 
 		$object->project = dol_clone($projectstatic);
 
@@ -235,7 +235,7 @@ if ($id > 0 || ! empty($ref))
 			print '<tr><td>'.$langs->trans("Label").'</td><td>'.$projectstatic->title.'</td></tr>';
 
 			print '<tr><td>'.$langs->trans("ThirdParty").'</td><td>';
-			if (! empty($projectstatic->societe->id)) print $projectstatic->societe->getNomUrl(1);
+			if (! empty($projectstatic->thirdparty->id)) print $projectstatic->thirdparty->getNomUrl(1);
 			else print '&nbsp;';
 			print '</td>';
 			print '</tr>';

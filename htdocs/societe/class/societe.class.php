@@ -135,17 +135,17 @@ class Societe extends CommonObject
     var $barcode_type;
     /**
      * code (loaded by fetch_barcode)
-     * @var
+     * @var string
      */
     var $barcode_type_code;
     /**
      * label (loaded by fetch_barcode)
-     * @var
+     * @var string
      */
     var $barcode_type_label;
     /**
      * coder (loaded by fetch_barcode)
-     * @var
+     * @var string
      */
     var $barcode_type_coder;
 
@@ -624,7 +624,7 @@ class Societe extends CommonObject
         // Clean parameters
         $this->id			= $id;
         $this->name			= $this->name?trim($this->name):trim($this->nom);
-        $this->nom			= trim($this->nom);		// TODO obsolete
+        $this->nom			= $this->name;	// For backward compatibility
         $this->ref_ext		= trim($this->ref_ext);
         $this->address		= $this->address?trim($this->address):trim($this->address);
         $this->zip			= $this->zip?trim($this->zip):trim($this->zip);
@@ -1685,15 +1685,15 @@ class Societe extends CommonObject
 
         if ($option == 'customer' || $option == 'compta')
         {
-           $lien = '<a href="'.DOL_URL_ROOT.'/comm/fiche.php?socid='.$this->id;
+           $lien = '<a href="'.DOL_URL_ROOT.'/comm/card.php?socid='.$this->id;
         }
         else if ($option == 'prospect' && empty($conf->global->SOCIETE_DISABLE_PROSPECTS))
         {
-            $lien = '<a href="'.DOL_URL_ROOT.'/comm/fiche.php?socid='.$this->id;
+            $lien = '<a href="'.DOL_URL_ROOT.'/comm/card.php?socid='.$this->id;
         }
         else if ($option == 'supplier')
         {
-            $lien = '<a href="'.DOL_URL_ROOT.'/fourn/fiche.php?socid='.$this->id;
+            $lien = '<a href="'.DOL_URL_ROOT.'/fourn/card.php?socid='.$this->id;
         }
         else if ($option == 'category')
         {

@@ -1,6 +1,7 @@
 <?php
 /* Copyright (C) 2008-2012	Laurent Destailleur	<eldy@users.sourceforge.net>
  * Copyright (C) 2010-2012	Regis Houssin		<regis.houssin@capnetworks.com>
+ * Copyright (C) 2014       Marcos García       <marcosgdf@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -284,8 +285,8 @@ class Task extends CommonObject
         $sql.= " description=".(isset($this->description)?"'".$this->db->escape($this->description)."'":"null").",";
         $sql.= " duration_effective=".(isset($this->duration_effective)?$this->duration_effective:"null").",";
         $sql.= " planned_workload=".(isset($this->planned_workload)?$this->planned_workload:"0").",";
-        $sql.= " dateo=".($this->date_start!=''?$this->db->idate($this->date_start):'null').",";
-        $sql.= " datee=".($this->date_end!=''?$this->db->idate($this->date_end):'null').",";
+        $sql.= " dateo=".($this->date_start!=''?"'".$this->db->idate($this->date_start)."'":'null').",";
+        $sql.= " datee=".($this->date_end!=''?"'".$this->db->idate($this->date_end)."'":'null').",";
         $sql.= " progress=".$this->progress.",";
         $sql.= " rang=".((!empty($this->rang))?$this->rang:"0");
         $sql.= " WHERE rowid=".$this->id;
@@ -1310,6 +1311,41 @@ class Task extends CommonObject
 			if ($statut==4) return $langs->trans($this->statuts_short[$statut]).' '.img_picto($langs->trans($this->statuts_short[$statut]),'statut6');
 			if ($statut==5) return $langs->trans($this->statuts_short[$statut]).' '.img_picto($langs->trans($this->statuts_short[$statut]),'statut5');
 		}
+	}
+
+	/**
+	 *  Create an intervention document on disk using template defined into PROJECT_TASK_ADDON_PDF
+	 *
+	 *  @param	string		$modele			force le modele a utiliser ('' par defaut)
+	 *  @param	Translate	$outputlangs	objet lang a utiliser pour traduction
+	 *  @param  int			$hidedetails    Hide details of lines
+	 *  @param  int			$hidedesc       Hide description
+	 *  @param  int			$hideref        Hide ref
+	 *  @param  HookManager	$hookmanager	Hook manager instance
+	 *  @return int         				0 if KO, 1 if OK
+	 */
+	public function generateDocument($modele, $outputlangs, $hidedetails=0, $hidedesc=0, $hideref=0, $hookmanager=false)
+	{
+		global $conf,$langs;
+
+		$langs->load("projects");
+
+		// Positionne modele sur le nom du modele de projet a utiliser
+		if (! dol_strlen($modele))
+		{
+			if (! empty($conf->global->PROJECT_TASK_ADDON_PDF))
+			{
+				$modele = $conf->global->PROJECT_TASK_ADDON_PDF;
+			}
+			else
+			{
+				$modele='nodefault';
+			}
+		}
+
+		$modelpath = "core/modules/project/task/doc/";
+
+		return $this->commonGenerateDocument($modelpath, $modele, $outputlangs, $hidedetails, $hidedesc, $hideref);
 	}
 
 }

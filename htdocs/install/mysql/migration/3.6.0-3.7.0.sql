@@ -20,6 +20,8 @@
 
 ALTER TABLE llx_bank_account ADD COLUMN fk_user_author integer;
 
+ALTER TABLE llx_c_actioncomm ADD COLUMN color varchar(9);
+
 ALTER TABLE llx_propal ADD COLUMN fk_user_modif integer after fk_user_author;
 ALTER TABLE llx_commande ADD COLUMN fk_user_modif integer after fk_user_author;
 ALTER TABLE llx_facture ADD COLUMN fk_user_modif integer after fk_user_author;
@@ -45,9 +47,9 @@ ALTER TABLE llx_user ADD COLUMN fk_user_modif integer AFTER fk_user_creat;
 
 -- Add module accounting Expert
 ALTER TABLE llx_bookkeeping RENAME TO llx_accounting_bookkeeping; -- To update old user of module Accounting Expert
- 
 
-CREATE TABLE llx_accounting_bookkeeping 
+
+CREATE TABLE llx_accounting_bookkeeping
 (
   rowid				integer NOT NULL AUTO_INCREMENT PRIMARY KEY,
   doc_date			date NOT NULL,
@@ -72,10 +74,35 @@ ALTER TABLE llx_c_paiement ADD COLUMN accountancy_code varchar(32) DEFAULT NULL 
 ALTER TABLE llx_bank_account ADD COLUMN accountancy_journal varchar(3) DEFAULT NULL AFTER account_number;
 
 ALTER TABLE llx_accountingaccount add column entity integer DEFAULT 1 NOT NULL AFTER rowid;
-ALTER TABLE llx_accountingaccount add column datec datetime NOT NULL AFTER entity;
+ALTER TABLE llx_accountingaccount add column datec datetime AFTER entity;
 ALTER TABLE llx_accountingaccount add column tms timestamp AFTER datec;
 ALTER TABLE llx_accountingaccount add column fk_user_author integer DEFAULT NULL AFTER label;
 ALTER TABLE llx_accountingaccount add column fk_user_modif integer DEFAULT NULL AFTER fk_user_author;
+
+-- Qual
+UPDATE llx_const SET name = 'ACCOUNTING_MODE' WHERE name = 'COMPTA_MODE';
+UPDATE llx_const SET name = 'ACCOUNTING_ACCOUNT_CUSTOMER' WHERE name = 'COMPTA_ACCOUNT_CUSTOMER';
+UPDATE llx_const SET name = 'ACCOUNTING_ACCOUNT_SUPPLIER' WHERE name = 'COMPTA_ACCOUNT_SUPPLIER';
+UPDATE llx_const SET name = 'ACCOUNTING_PRODUCT_BUY_ACCOUNT' WHERE name = 'COMPTA_PRODUCT_BUY_ACCOUNT';
+UPDATE llx_const SET name = 'ACCOUNTING_PRODUCT_SOLD_ACCOUNT' WHERE name = 'COMPTA_PRODUCT_SOLD_ACCOUNT';
+UPDATE llx_const SET name = 'ACCOUNTING_SERVICE_BUY_ACCOUNT' WHERE name = 'COMPTA_SERVICE_BUY_ACCOUNT';
+UPDATE llx_const SET name = 'ACCOUNTING_SERVICE_SOLD_ACCOUNT' WHERE name = 'COMPTA_SERVICE_SOLD_ACCOUNT';
+
+-- Compatibility with module Accounting Expert
+UPDATE llx_const SET name = 'ACCOUNTING_SEPARATORCSV' WHERE name = 'ACCOUNTINGEX_SEPARATORCSV';
+UPDATE llx_const SET name = 'ACCOUNTING_ACCOUNT_SUSPENSE' WHERE name = 'ACCOUNTINGEX_ACCOUNT_SUSPENSE';
+UPDATE llx_const SET name = 'ACCOUNTING_SELL_JOURNAL' WHERE name = 'ACCOUNTINGEX_SELL_JOURNAL';
+UPDATE llx_const SET name = 'ACCOUNTING_PURCHASE_JOURNAL' WHERE name = 'ACCOUNTINGEX_PURCHASE_JOURNAL';
+UPDATE llx_const SET name = 'ACCOUNTING_SOCIAL_JOURNAL' WHERE name = 'ACCOUNTINGEX_SOCIAL_JOURNAL';
+UPDATE llx_const SET name = 'ACCOUNTING_CASH_JOURNAL' WHERE name = 'ACCOUNTINGEX_CASH_JOURNAL';
+UPDATE llx_const SET name = 'ACCOUNTING_MISCELLANEOUS_JOURNAL' WHERE name = 'ACCOUNTINGEX_MISCELLANEOUS_JOURNAL';
+UPDATE llx_const SET name = 'ACCOUNTING_ACCOUNT_TRANSFER_CASH' WHERE name = 'ACCOUNTINGEX_ACCOUNT_TRANSFER_CASH';
+UPDATE llx_const SET name = 'ACCOUNTING_MODELCSV' WHERE name = 'ACCOUNTINGEX_MODELCSV';
+UPDATE llx_const SET name = 'ACCOUNTING_LENGTH_GACCOUNT' WHERE name = 'ACCOUNTINGEX_LENGTH_GACCOUNT';
+UPDATE llx_const SET name = 'ACCOUNTING_LENGTH_AACCOUNT' WHERE name = 'ACCOUNTINGEX_LENGTH_AACCOUNT';
+UPDATE llx_const SET name = 'ACCOUNTING_LIMIT_LIST_VENTILATION' WHERE name = 'ACCOUNTINGEX_LIMIT_LIST_VENTILATION';
+UPDATE llx_const SET name = 'ACCOUNTING_LIST_SORT_VENTILATION_TODO' WHERE name = 'ACCOUNTINGEX_LIST_SORT_VENTILATION_TODO';
+UPDATE llx_const SET name = 'ACCOUNTING_LIST_SORT_VENTILATION_DONE' WHERE name = 'ACCOUNTINGEX_LIST_SORT_VENTILATION_DONE';
 
 -- Drop old table
 DROP TABLE llx_compta;
@@ -105,6 +132,8 @@ ALTER TABLE llx_user ADD COLUMN weeklyhours double(16,8);
 
 
 ALTER TABLE llx_projet_task_time ADD COLUMN task_datehour datetime after task_date;
+
+ALTER TABLE llx_actioncomm_resources CHANGE COLUMN transparent transparency smallint default 1;
 
 
 -- Localtaxes by thirds
@@ -175,7 +204,7 @@ create table llx_accounting_fiscalyear
 )ENGINE=innodb;
 
 ALTER TABLE llx_contrat ADD COLUMN ref_ext varchar(30) after ref;
-ALTER TABLE llx_contrat ADD COLUMN ref_customer varchar(30) after ref_ext;
+ALTER TABLE llx_contrat ADD COLUMN ref_supplier varchar(30) after ref_ext;
 
 ALTER TABLE llx_propal ADD COLUMN fk_shipping_method integer AFTER date_livraison;
 ALTER TABLE llx_commande ADD COLUMN fk_shipping_method integer AFTER date_livraison;
@@ -982,6 +1011,7 @@ create table llx_c_email_templates
   entity		  integer DEFAULT 1 NOT NULL,	  -- multi company id
   module          varchar(32),                    -- Nom du module en rapport avec le modele
   type_template   varchar(32),  				  -- template for which type of email (send invoice by email, send order, ...)
+  lang            varchar(32),
   private         smallint DEFAULT 0 NOT NULL,    -- Template public or private
   fk_user         integer,                        -- Id utilisateur si modele prive, sinon null
   datec           datetime,
@@ -1046,4 +1076,13 @@ CREATE TABLE llx_fichinterdet_extrafields
 
 ALTER TABLE llx_fichinterdet_extrafields ADD INDEX idx_ficheinterdet_extrafields (fk_object);
 
+CREATE TABLE llx_usergroup_extrafields (
+  rowid                     integer AUTO_INCREMENT PRIMARY KEY,
+  tms                       timestamp,
+  fk_object                 integer NOT NULL,
+  import_key                varchar(14)                          		-- import key
+) ENGINE=innodb;
 
+ALTER TABLE llx_usergroup_extrafields ADD INDEX idx_usergroup_extrafields (fk_object);
+
+ALTER TABLE llx_contrat ADD COLUMN model_pdf varchar(255) DEFAULT NULL AFTER note_public;

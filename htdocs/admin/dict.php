@@ -1,6 +1,6 @@
 <?php
 /* Copyright (C) 2004      Rodolphe Quiedeville <rodolphe@quiedeville.org>
- * Copyright (C) 2004-2012 Laurent Destailleur  <eldy@users.sourceforge.net>
+ * Copyright (C) 2004-2014 Laurent Destailleur  <eldy@users.sourceforge.net>
  * Copyright (C) 2004      Benoit Mortier       <benoit.mortier@opensides.be>
  * Copyright (C) 2005-2012 Regis Houssin        <regis.houssin@capnetworks.com>
  * Copyright (C) 2010-2013 Juanjo Menent        <jmenent@2byte.es>
@@ -133,7 +133,7 @@ $tabsql[2] = "SELECT d.rowid as rowid, d.code_departement as code, d.nom as libe
 $tabsql[3] = "SELECT r.rowid as rowid, r.code_region as code, r.nom as libelle, r.fk_pays as country_id, c.code as country_code, c.label as country, r.active FROM ".MAIN_DB_PREFIX."c_regions as r, ".MAIN_DB_PREFIX."c_country as c WHERE r.fk_pays=c.rowid and c.active=1";
 $tabsql[4] = "SELECT rowid   as rowid, code, label, active FROM ".MAIN_DB_PREFIX."c_country";
 $tabsql[5] = "SELECT c.rowid as rowid, c.code as code, c.label, c.active FROM ".MAIN_DB_PREFIX."c_civility AS c";
-$tabsql[6] = "SELECT a.id    as rowid, a.code as code, a.libelle AS libelle, a.type, a.active, a.module, a.position FROM ".MAIN_DB_PREFIX."c_actioncomm AS a";
+$tabsql[6] = "SELECT a.id    as rowid, a.code as code, a.libelle AS libelle, a.type, a.active, a.module, a.color, a.position FROM ".MAIN_DB_PREFIX."c_actioncomm AS a";
 $tabsql[7] = "SELECT a.id    as rowid, a.code as code, a.libelle AS libelle, a.accountancy_code as accountancy_code, a.deductible, c.code as country_code, c.label as country, a.fk_pays as country_id, a.active FROM ".MAIN_DB_PREFIX."c_chargesociales AS a, ".MAIN_DB_PREFIX."c_country as c WHERE a.fk_pays=c.rowid and c.active=1";
 $tabsql[8] = "SELECT t.id    as rowid, t.code as code, t.libelle, t.fk_country as country_id, c.code as country_code, c.label as country, t.active FROM ".MAIN_DB_PREFIX."c_typent as t LEFT JOIN ".MAIN_DB_PREFIX."c_country as c ON t.fk_country=c.rowid";
 $tabsql[9] = "SELECT code_iso as code, label, unicode, active FROM ".MAIN_DB_PREFIX."c_currencies";
@@ -187,7 +187,7 @@ $tabfield[2] = "code,libelle,region_id,region,country";   // "code,libelle,regio
 $tabfield[3] = "code,libelle,country_id,country";
 $tabfield[4] = "code,label";
 $tabfield[5] = "code,label";
-$tabfield[6] = "code,libelle,type,position";
+$tabfield[6] = "code,libelle,type,color,position";
 $tabfield[7] = "code,libelle,country_id,country,accountancy_code,deductible";
 $tabfield[8] = "code,libelle,country_id,country";
 $tabfield[9] = "code,label,unicode";
@@ -214,7 +214,7 @@ $tabfieldvalue[2] = "code,libelle,region";   // "code,libelle,region"
 $tabfieldvalue[3] = "code,libelle,country";
 $tabfieldvalue[4] = "code,label";
 $tabfieldvalue[5] = "code,label";
-$tabfieldvalue[6] = "code,libelle,type,position";
+$tabfieldvalue[6] = "code,libelle,type,color,position";
 $tabfieldvalue[7] = "code,libelle,country,accountancy_code,deductible";
 $tabfieldvalue[8] = "code,libelle,country";
 $tabfieldvalue[9] = "code,label,unicode";
@@ -241,7 +241,7 @@ $tabfieldinsert[2] = "code_departement,nom,fk_region";
 $tabfieldinsert[3] = "code_region,nom,fk_pays";
 $tabfieldinsert[4] = "code,label";
 $tabfieldinsert[5] = "code,label";
-$tabfieldinsert[6] = "code,libelle,type,position";
+$tabfieldinsert[6] = "code,libelle,type,color,position";
 $tabfieldinsert[7] = "code,libelle,fk_pays,accountancy_code,deductible";
 $tabfieldinsert[8] = "code,libelle,fk_country";
 $tabfieldinsert[9] = "code_iso,label,unicode";
@@ -375,7 +375,7 @@ $tabfieldcheck[24] = array();
 complete_dictionary_with_modules($taborder,$tabname,$tablib,$tabsql,$tabsqlsort,$tabfield,$tabfieldvalue,$tabfieldinsert,$tabrowid,$tabcond,$tabhelp,$tabfieldcheck);
 
 
-// Define elementList and sourceList (used for dictionary "type of contacts")
+// Define elementList and sourceList (used for dictionary type of contacts "llx_c_type_contact")
 $elementList = array();
 $sourceList=array();
 if ($id == 11)
@@ -412,7 +412,7 @@ if ($id == 11)
 	);
 }
 
-// Define localtax_typeList (used for dictionary "c_tva")
+// Define localtax_typeList (used for dictionary "llx_c_tva")
 $localtax_typeList = array();
 if ($id == 10)
 {
@@ -425,7 +425,6 @@ if ($id == 10)
 			"5" => $langs->trans("Yes").' ('.$langs->trans("Type")." 5)",	//$langs->trans("%ageOnServiceWithoutVAT"),
 			"6" => $langs->trans("Yes").' ('.$langs->trans("Type")." 6)"	//$langs->trans("%ageOnServiceBeforeVAT"),
 	);
-	if (! empty($conf->global->MAIN_USE_LOCALTAX_TYPE_7)) $localtax_typeList["7"]= $langs->trans("Yes").' ('.$langs->trans("Type")." 7)";	//$langs->trans("AmountOnOrder")	// We will enable this later. For the moment, work only of invoice localtype
 }
 
 
@@ -445,6 +444,7 @@ if (GETPOST('actionadd') || GETPOST('actionmodify'))
         if ($value == 'country_id' && in_array($tablib[$id],array('DictionaryRegion','DictionaryCompanyType'))) continue;		// For some pages, country is not mandatory
         if ($value == 'localtax1' && empty($_POST['localtax1_type'])) continue;
         if ($value == 'localtax2' && empty($_POST['localtax2_type'])) continue;
+        if ($value == 'color' && empty($_POST['color'])) continue;
         if ((! isset($_POST[$value]) || $_POST[$value]=='')
         	&& (! in_array($listfield[$f], array('decalage','module','accountancy_code','accountancy_code_sell','accountancy_code_buy')))  // Fields that are not mandatory
 		)
@@ -1127,27 +1127,29 @@ if ($id)
                         }
                     }
 
-                    // Est-ce une entree du dictionnaire qui peut etre desactivee ?
-                    // True by default
-                    $iserasable=1;
+                    // Can an entry be erased or disabled ?
+                    $iserasable=1;$isdisable=1;	// true by default
 
                     if (isset($obj->code))
                     {
-                    	if (($obj->code == '0' || $obj->code == '' || preg_match('/unknown/i',$obj->code))) $iserasable = 0;
-                    	else if ($obj->code == 'RECEP') $iserasable = 0;
-                    	else if ($obj->code == 'EF0') $iserasable = 0;
+                    	if (($obj->code == '0' || $obj->code == '' || preg_match('/unknown/i',$obj->code))) { $iserasable = 0; $isdisable = 0; }
+                    	else if ($obj->code == 'RECEP') { $iserasable = 0; $isdisable = 0; }
+                    	else if ($obj->code == 'EF0')   { $iserasable = 0; $isdisable = 0; }
                     }
 
-                    if (isset($obj->type) && in_array($obj->type, array('system', 'systemauto'))) $iserasable=0;
+                    if (isset($obj->type) && in_array($obj->type, array('system', 'systemauto'))) { $iserasable=0; }
+                    if (in_array($obj->code, array('AC_OTH','AC_OTH_AUTO')) || in_array($obj->type, array('systemauto'))) { $isdisable=0; $isdisable = 0; }
 
                     $url = $_SERVER["PHP_SELF"].'?'.($page?'page='.$page.'&':'').'sortfield='.$sortfield.'&sortorder='.$sortorder.'&rowid='.(! empty($obj->rowid)?$obj->rowid:(! empty($obj->code)?$obj->code:'')).'&amp;code='.(! empty($obj->code)?$obj->code:'').'&amp;id='.$id.'&amp;';
 
                     // Active
                     print '<td align="center" class="nowrap">';
-                    if ($iserasable) print '<a href="'.$url.'action='.$acts[$obj->active].'">'.$actl[$obj->active].'</a>';
+                    if ($isdisable) print '<a href="'.$url.'action='.$acts[$obj->active].'">'.$actl[$obj->active].'</a>';
                     else
                  	{
-                  		if (isset($obj->type) && in_array($obj->type, array('system', 'systemauto')) && empty($obj->active)) print $langs->trans("Deprecated");
+                 		if (in_array($obj->code, array('AC_OTH','AC_OTH_AUTO'))) print $langs->trans("AlwaysActive");
+                 		else if (isset($obj->type) && in_array($obj->type, array('systemauto')) && empty($obj->active)) print $langs->trans("Deprecated");
+                  		else if (isset($obj->type) && in_array($obj->type, array('system')) && ! empty($obj->active) && $obj->code != 'AC_OTH') print $langs->trans("UsedOnlyWithTypeOption");
                     	else print $langs->trans("AlwaysActive");
                     }
                     print "</td>";

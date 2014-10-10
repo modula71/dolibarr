@@ -1108,7 +1108,7 @@ function numero_semaine($time)
  *	Convertit une masse d'une unite vers une autre unite
  *
  *	@param	float	$weight    		Masse a convertir
- *	@param  int		&$from_unit 		Unite originale en puissance de 10
+ *	@param  int		$from_unit 		Unite originale en puissance de 10
  *	@param  int		$to_unit   		Nouvelle unite  en puissance de 10
  *	@return float	        		Masse convertie
  */
@@ -1143,8 +1143,8 @@ function weight_convert($weight,&$from_unit,$to_unit)
  *
  *	@param	DoliDB	$db         Handler database
  *	@param	Conf	$conf		Object conf
- *	@param	User	&$user      Object user
- *	@param	array	$tab        Tableau (cle=>valeur) des parametres a sauvegarder
+ *	@param	User	$user      	Object user
+ *	@param	array	$tab        Array (key=>value) with all parameters to save
  *	@return int         		<0 if KO, >0 if OK
  *
  *	@see		dolibarr_get_const, dolibarr_set_const, dolibarr_del_const

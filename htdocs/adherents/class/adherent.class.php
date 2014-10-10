@@ -1090,7 +1090,7 @@ class Adherent extends CommonObject
                 $this->ref				= $obj->rowid;
                 $this->id				= $obj->rowid;
                 $this->ref_ext			= $obj->ref_ext;
-                $this->civility_id		= $obj->civility;
+                $this->civility_id		= $obj->civility_id;
                 $this->firstname		= $obj->firstname;
                 $this->lastname			= $obj->lastname;
                 $this->login			= $obj->login;
@@ -1558,7 +1558,7 @@ class Adherent extends CommonObject
 
         if ($option == 'card')
         {
-            $lien = '<a href="'.DOL_URL_ROOT.'/adherents/fiche.php?rowid='.$this->id.'">';
+            $lien = '<a href="'.DOL_URL_ROOT.'/adherents/card.php?rowid='.$this->id.'">';
             $lienfin='</a>';
         }
         if ($option == 'subscription')

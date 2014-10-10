@@ -121,8 +121,8 @@ if ($result) {
 
 	$num = $db->num_rows($result);
 	// les variables
-	$cptfour = (! empty($conf->global->COMPTA_ACCOUNT_SUPPLIER) ? $conf->global->COMPTA_ACCOUNT_SUPPLIER : $langs->trans("CodeNotDef"));
-	$cptcli = (! empty($conf->global->COMPTA_ACCOUNT_CUSTOMER) ? $conf->global->COMPTA_ACCOUNT_CUSTOMER : $langs->trans("CodeNotDef"));
+	$cptfour = (! empty($conf->global->ACCOUNTING_ACCOUNT_SUPPLIER) ? $conf->global->ACCOUNTING_ACCOUNT_SUPPLIER : $langs->trans("CodeNotDef"));
+	$cptcli = (! empty($conf->global->ACCOUNTING_ACCOUNT_CUSTOMER) ? $conf->global->ACCOUNTING_ACCOUNT_CUSTOMER : $langs->trans("CodeNotDef"));
 	$cpttva = (! empty($conf->global->ACCOUNTING_ACCOUNT_SUSPENSE) ? $conf->global->ACCOUNTING_ACCOUNT_SUSPENSE : $langs->trans("CodeNotDef"));
 	$cptsociale = (! empty($conf->global->ACCOUNTING_ACCOUNT_SUSPENSE) ? $conf->global->ACCOUNTING_ACCOUNT_SUSPENSE : $langs->trans("CodeNotDef"));
 
@@ -171,7 +171,7 @@ if ($result) {
 			} else if ($links[$key]['type'] == 'company') {
 
 				$societestatic->id = $links[$key]['url_id'];
-				$societestatic->nom = $links[$key]['label'];
+				$societestatic->name = $links[$key]['label'];
 				$tabpay[$obj->rowid]["soclib"] = $societestatic->getNomUrl(1, '', 30);
 				$tabtp[$obj->rowid][$compta_soc] += $obj->amount;
 			} else if ($links[$key]['type'] == 'sc') {
@@ -318,7 +318,7 @@ if ($action == 'writeBookKeeping') {
 					$bookkeeping->doc_ref = $objmid->facnumber;
 				}
 				$bookkeeping->code_tiers = $k;
-				$bookkeeping->numero_compte = $conf->global->COMPTA_ACCOUNT_CUSTOMER;
+				$bookkeeping->numero_compte = $conf->global->ACCOUNTING_ACCOUNT_CUSTOMER;
 			} else if ($tabtype[$key] == 'payment_supplier') {
 
 				$sqlmid = 'SELECT facf.facnumber';
@@ -333,7 +333,7 @@ if ($action == 'writeBookKeeping') {
 					$bookkeeping->doc_ref = $objmid->facnumber;
 				}
 				$bookkeeping->code_tiers = $k;
-				$bookkeeping->numero_compte = $conf->global->COMPTA_ACCOUNT_SUPPLIER;
+				$bookkeeping->numero_compte = $conf->global->ACCOUNTING_ACCOUNT_SUPPLIER;
 			} else if ($tabtype[$key] == 'company') {
 
 				$sqlmid = 'SELECT fac.facnumber';
@@ -348,11 +348,11 @@ if ($action == 'writeBookKeeping') {
 					$bookkeeping->doc_ref = $objmid->facnumber;
 				}
 				$bookkeeping->code_tiers = $k;
-				$bookkeeping->numero_compte = $conf->global->COMPTA_ACCOUNT_CUSTOMER;
+				$bookkeeping->numero_compte = $conf->global->ACCOUNTING_ACCOUNT_CUSTOMER;
 			} else {
 
 				$bookkeeping->doc_ref = $k;
-				$bookkeeping->numero_compte = $conf->global->COMPTA_ACCOUNT_CUSTOMER;
+				$bookkeeping->numero_compte = $conf->global->ACCOUNTING_ACCOUNT_CUSTOMER;
 			}
 
 			$result = $bookkeeping->create();
@@ -399,9 +399,9 @@ if ($action == 'export_csv') {
 					print $date . $sep;
 					print $conf->global->ACCOUNTING_CASH_JOURNAL . $sep;
 					if ($obj->label == '(SupplierInvoicePayment)') {
-						print length_accountg($conf->global->COMPTA_ACCOUNT_SUPPLIER) . $sep;
+						print length_accountg($conf->global->ACCOUNTING_ACCOUNT_SUPPLIER) . $sep;
 					} else {
-						print length_accountg($conf->global->COMPTA_ACCOUNT_CUSTOMER) . $sep;
+						print length_accountg($conf->global->ACCOUNTING_ACCOUNT_CUSTOMER) . $sep;
 					}
 					print length_accounta(html_entity_decode($k)) . $sep;
 					print ($mt < 0 ? 'D' : 'C') . $sep;
@@ -448,14 +448,14 @@ if ($action == 'export_csv') {
 
 	llxHeader('', $langs->trans("CashJournal"), '');
 
-	$nom = $langs->trans("CashJournal");
+	$name = $langs->trans("CashJournal");
 	$nomlink = '';
 	$periodlink = '';
 	$exportlink = '';
 	$builddate = time();
 	$description = $langs->trans("DescCashJournal") . '<br>';
 	$period = $form->select_date($date_start, 'date_start', 0, 0, 0, '', 1, 0, 1) . ' - ' . $form->select_date($date_end, 'date_end', 0, 0, 0, '', 1, 0, 1);
-	report_header($nom, $nomlink, $period, $periodlink, $description, $builddate, $exportlink, array('action' => ''));
+	report_header($name, $nomlink, $period, $periodlink, $description, $builddate, $exportlink, array('action' => ''));
 
 	print '<input type="button" class="button" style="float: right;" value="Export CSV" onclick="launch_export();" />';
 
